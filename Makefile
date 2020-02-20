@@ -9,9 +9,11 @@ NPROCS ?= 1
 
 OS := $(shell uname -s)
 
-KC_OPTIONS ?= --enable-lzo
-KT_OPTIONS ?= --enable-lua
+# for some reason, ?= override wasn't being detected when pass in
+# environment in through two levels of make
 
+KC_OPTIONS = --enable-lzo --disable-shared
+KT_OPTIONS = --disable-lua --disable-shared
 
 # Parallelize the build on Linux...
 ifeq ($(OS),Linux)
