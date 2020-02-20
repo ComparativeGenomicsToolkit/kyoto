@@ -93,6 +93,12 @@ bool TimedDB::dump_snapshot_atomic(const std::string& dest, kc::Compressor* zcom
         info == typeid(kc::StashDB) || info == typeid(kc::CacheDB) ||
         info == typeid(kc::GrassDB)) forkable = true;
   }
+  
+  /* hack to get cactus running on Ubuntu 18.04 
+     see: https://github.com/ComparativeGenomicsToolkit/cactus/pull/148#issuecomment-589151694
+  */
+  forkable = false;
+  
   int64_t cpid = -1;
   if (forkable) {
     class Forker : public kc::BasicDB::FileProcessor {
