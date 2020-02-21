@@ -69,7 +69,7 @@ cabinet: kyotocabinet/Makefile
 kyotocabinet/libkyotocabinet.a: cabinet
 kyotocabinet/libkyotocabinet.$(SO_EXTENSION): cabinet
 
-kyototycoon/Makefile: kyotocabinet/libkyotocabinet.a kyotocabinet/libkyotocabinet.$(SO_EXTENSION)
+kyototycoon/Makefile: kyotocabinet/libkyotocabinet.a
 	$(eval CABINET_ROOT := $(shell awk '/^prefix *=/ {print $$3}' kyotocabinet/Makefile))
 	test -x kyototycoon/configure && cd kyototycoon && \
 	PKG_CONFIG_PATH="../kyotocabinet" CPPFLAGS="-I../kyotocabinet $(CPPFLAGS)" LDFLAGS="-L../kyotocabinet $(LDFLAGS)" \
