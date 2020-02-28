@@ -9,9 +9,11 @@ NPROCS ?= 1
 
 OS := $(shell uname -s)
 
-KC_OPTIONS ?= --enable-lzo
-KT_OPTIONS ?= --enable-lua
+# for some reason, ?= override wasn't being detected when pass in
+# environment in through two levels of make
 
+KC_OPTIONS = --enable-lzo --disable-shared
+KT_OPTIONS = --disable-lua --disable-shared
 
 # Parallelize the build on Linux...
 ifeq ($(OS),Linux)
@@ -67,7 +69,7 @@ cabinet: kyotocabinet/Makefile
 kyotocabinet/libkyotocabinet.a: cabinet
 kyotocabinet/libkyotocabinet.$(SO_EXTENSION): cabinet
 
-kyototycoon/Makefile: kyotocabinet/libkyotocabinet.a kyotocabinet/libkyotocabinet.$(SO_EXTENSION)
+kyototycoon/Makefile: kyotocabinet/libkyotocabinet.a
 	$(eval CABINET_ROOT := $(shell awk '/^prefix *=/ {print $$3}' kyotocabinet/Makefile))
 	test -x kyototycoon/configure && cd kyototycoon && \
 	PKG_CONFIG_PATH="../kyotocabinet" CPPFLAGS="-I../kyotocabinet $(CPPFLAGS)" LDFLAGS="-L../kyotocabinet $(LDFLAGS)" \
