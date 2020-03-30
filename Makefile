@@ -9,11 +9,8 @@ NPROCS ?= 1
 
 OS := $(shell uname -s)
 
-# for some reason, ?= override wasn't being detected when pass in
-# environment in through two levels of make
-
-KC_OPTIONS = --enable-lzo --disable-shared
-KT_OPTIONS = --disable-lua --disable-shared
+KC_OPTIONS ?= --enable-lzo
+KT_OPTIONS ?= --without-lua
 
 # Parallelize the build on Linux...
 ifeq ($(OS),Linux)
@@ -104,7 +101,7 @@ deb:
 	$(eval PACKAGE_ARCH := $(shell dpkg-architecture -qDEB_BUILD_ARCH))
 	$(eval PACKAGE_NAME := kyoto-tycoon_$(PACKAGE_VERSION)_$(PACKAGE_ARCH))
 
-	$(MAKE) PREFIX=/usr KC_OPTIONS="--enable-lzo" KT_OPTIONS="--enable-lua"
+	$(MAKE) PREFIX=/usr KC_OPTIONS="${KC_OPTIONS}" KT_OPTIONS="${KT_OPTIONS}"
 	$(MAKE) install DESTDIR="$(PWD)/build/$(PACKAGE_NAME)"
 
 	mkdir -p "build/$(PACKAGE_NAME)/etc/init.d"
