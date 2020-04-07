@@ -10,8 +10,8 @@ NPROCS ?= 1
 OS := $(shell uname -s)
 
 
-KC_OPTIONS ?= --enable-lzo
-KT_OPTIONS ?= --without-lua
+KC_OPTIONS ?= --enable-lzo --enable-static --disable-shared
+KT_OPTIONS ?= --without-lua --enable-static --disable-shared
 
 # Parallelize the build on Linux...
 ifeq ($(OS),Linux)
