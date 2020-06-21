@@ -118,19 +118,16 @@ bool TimedDB::dump_snapshot_atomic(const std::string& dest, kc::Compressor* zcom
     db_.occupy(true, &forker);
     cpid = forker.cpid();
   };
-  if (cpid > 0) {
+  if (cpid == 0) {
+    // if there's a hang while writing the snapshot
+    // (defined as 2.8 hours going by without the file size changing)
+    // then abort with the "hanging" error
     int64_t osiz = 0;
     int32_t cnt = 0;
-    while (true) {
-      cnt++;
-      int32_t status;
-      int32_t rv = wait_impl(cpid, &status, 1);
-      if (rv == 0) return status == 0;
-      if (rv < 0) {
-        kill_impl(cpid, true);
-        wait_impl(cpid, &status, 1);
-        break;
-      }
+    pid_t parent_id = ::getppid();
+    for (int32_t cnt = 0; cnt < 100000; ++cnt) {
+      kc::Thread::sleep(0.1);
+      
       int64_t nsiz = 0;
       kc::File::Status sbuf;
       if (kc::File::status(dest, &sbuf)) nsiz = sbuf.size;
@@ -138,13 +135,11 @@ bool TimedDB::dump_snapshot_atomic(const std::string& dest, kc::Compressor* zcom
         osiz = nsiz;
         cnt = 0;
       }
-      if (cnt >= 10) {
-        db_.set_error(_KCCODELINE_, kc::BasicDB::Error::LOGIC, "hanging");
-        kill_impl(cpid, true);
-        wait_impl(cpid, &status, 0);
-        break;
-      }
     }
+    db_.set_error(_KCCODELINE_, kc::BasicDB::Error::LOGIC, "hanging");
+    kill_impl(parent_id, true);
+    int32_t status;
+    wait_impl(parent_id, &status, 0);
     return false;
   } else if (cpid == 0) {
     nice_impl(1);
@@ -238,7 +233,11 @@ bool TimedDB::dump_snapshot_atomic(const std::string& dest, kc::Compressor* zcom
     if (cpid != 0) db_.set_error(_KCCODELINE_, kc::BasicDB::Error::SYSTEM, file.error());
     return false;
   }
-  if (cpid == 0) exit_impl(0);
+  if (cpid > 0) {
+    kill_impl(cpid, true);
+    int32_t status;
+    wait_impl(cpid, &status, 0);
+  }
   return !err;
 }
 
